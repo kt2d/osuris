@@ -10,10 +10,10 @@ Updated By: Plan Agent
 
 Iteration 9 (Quality Sweep) — Plan v11.0 created 2026-09-23.
 
-- TASK-039: READY — Establish the git baseline commit. Clear the polluted index (1,560 node_modules/dist files), extend `.gitignore`, make the initial commit. Priority: High. Dependencies: none.
-- TASK-040: READY (blocked by TASK-039) — Low cleanup bundle + determinism hardening. Remove Test 42 dead tolerance (CR-IT5-001), add CR-IT8-001 comment + Test 70 pin, fix CR-IT8-002 JSDoc, add `randomSource()` seam + `TestGame` (LIM-021-2 re-scoped), update README. Priority: High.
-- TASK-041: READY (blocked by TASK-039) — Add `scripts/check-dist.mjs` and wire to `postbuild`. Priority: Medium. Independent of TASK-040/042.
-- TASK-042: READY (blocked by TASK-040) — Split `src/main.ts` into `src/tests/` component files (thin entry + 10 files). Priority: High.
+- TASK-039: DONE (2026-09-23) — Git baseline established. Commit `5b34bc2` (99 files, 21,019 insertions). `.gitignore` extended with `node_modules/` and `dist/`. Index cleared from 1,655 → 99 files. Report in `.workflow_doc/30_implement.md`.
+- TASK-040: READY — Low cleanup bundle + determinism hardening. Remove Test 42 dead tolerance (CR-IT5-001), add CR-IT8-001 comment + Test 70 pin, fix CR-IT8-002 JSDoc, add `randomSource()` seam + `TestGame` (LIM-021-2 re-scoped), update README. Priority: High.
+- TASK-041: READY — Add `scripts/check-dist.mjs` and wire to `postbuild`. Priority: Medium. Independent of TASK-040/042.
+- TASK-042: BLOCKED (by TASK-040) — Split `src/main.ts` into `src/tests/` component files (thin entry + 10 files). Priority: High.
 
 Iteration 8 (Compression System Fix) — Plan v10.0 created 2026-09-03. Iteration 8 is COMPLETE (all 3 tasks DONE).
 
@@ -39,6 +39,7 @@ All prior tasks through Iteration 7 are DONE.
 
 # Workflow Notes
 
+- **2026-09-23 TASK-039 completed (Iteration 9, first task):** Git baseline established. Commit `5b34bc2` (99 files). `.gitignore` extended with `node_modules/` and `dist/`. Risk-005 RESOLVED. Per-task commit discipline now active. Next dispatch: TASK-040 (High) and TASK-041 (Medium) are both READY. Report in `.workflow_doc/30_implement.md`.
 - **2026-09-23 Plan v11.0 created (Iteration 9 Quality Sweep):** 4 tasks created: TASK-039 (git baseline), TASK-040 (Low cleanup + determinism), TASK-041 (dist check), TASK-042 (main.ts split). Challenge Agent review (2026-09-23) complete; all 8 findings (F-IT9-01 through F-IT9-08) accepted and incorporated into task packets. Execution order: TASK-039 → TASK-040 → TASK-042; TASK-041 independent. Task packets in `.workflow_doc/25_task_packets/`. Next dispatch: TASK-039 (git baseline) — the first and only READY task with no dependencies.
 - **2026-09-23 Challenge Agent review completed (Iteration 9 Quality sweep design):** Advisory review of the proposed TASK-039/040/041/042 design (per Recommendation-BE-010). Verdict: design sound; cleanup-before-split ordering endorsed; split design verified safe (ESM module-evaluation ordering; no cross-section shared variables beyond harness/mocks). Task packets must carry these corrections before dispatch: F-IT9-01 (clear the git index before the baseline commit — 1,560 node_modules/dist files are already staged; .gitignore does not unstage them), F-IT9-02 (TASK-040.5 premise wrong — re-scope as determinism hardening; Test 42 is deterministic today), F-IT9-03 (TASK-042 ACs: 70→71 sections after TASK-040; add count-baseline capture step), F-IT9-04/05/06/07/08 (Test 70(b) is the new pin; add dist/entry.js check; merge Test 6 into activePiece.test.ts; write the import rule into the TASK-042 packet). Report in `.workflow_doc/20_challenge.md`.
 - **2026-09-18 Bird's Eye Review completed (Iterations 0–8, focus IT5–8)**: Project health **Healthy** (up from Stable). Key findings: (1) recurring spec-interpretation bug class resolved — "contacting the wall" = "at the wall's own column" (Lesson-002; 3 instances: Debt-005, BUG C, BUG D); (2) 2026-09-01 Challenge F9/F10 "not a bug" verdicts were later overturned (they described exactly BUG C/BUG D) — spec-interpretation verdicts are low-confidence (now in Workflow Knowledge); (3) spec-vs-implementation comparison at plan time is the primary rule-bug detector; (4) two new actionable gaps recorded: Debt-010 (main.ts 2,903 lines / 463 assertions crossed the ~400 split threshold) and Risk-005 (zero git commits — no VCS baseline). Positive: 15 design deviations all legitimate; fix + regression pin pairing standard; zero regressions at iteration boundaries. Next: user selects Iteration 9 scope (candidates: quality sweep = git baseline + main.ts split + Low cleanup + determinism; or Debt-002 SRS rotation) → Plan Agent. Report in `.workflow_doc/50_birds_eye_review.md`.
@@ -61,16 +62,16 @@ All prior tasks through Iteration 7 are DONE.
 
 Runner dispatches the first READY task whose dependencies are all DONE, in priority order (High > Medium > Low).
 
-Current dispatch (Iteration 9): **TASK-039** (git baseline) is the only READY task with no dependencies. Dispatch TASK-039 first. After TASK-039 is DONE, TASK-040 and TASK-041 become READY (both High and Medium priority respectively; dispatch TASK-040 first per priority). After TASK-040 is DONE, TASK-042 becomes READY.
+Current dispatch (Iteration 9): TASK-039 is DONE. **TASK-040** (Low cleanup + determinism, High priority) and **TASK-041** (dist check, Medium priority) are both READY. Dispatch TASK-040 first per priority. After TASK-040 is DONE, TASK-042 becomes READY.
 
 ## Task Dependencies
 
 ```
 Iteration 9 (Quality Sweep):
-TASK-039 (git baseline) → READY
-TASK-040 (Low cleanup + determinism) → READY (dep: TASK-039)
-TASK-041 (dist check) → READY (dep: TASK-039)
-TASK-042 (main.ts split) → READY (dep: TASK-040)
+TASK-039 (git baseline) → DONE (2026-09-23, commit 5b34bc2)
+TASK-040 (Low cleanup + determinism) → READY
+TASK-041 (dist check) → READY
+TASK-042 (main.ts split) → BLOCKED (dep: TASK-040)
 
 Iteration 8 (Compression System Fix) — COMPLETE:
 TASK-036 (CompressionSystem fix) → DONE (2026-09-08)
@@ -84,9 +85,9 @@ TASK-030 through TASK-035 → DONE
 
 Recommended execution order (Iteration 9):
 
-1. TASK-039 (git baseline) — dispatch now
-2. TASK-040 (Low cleanup + determinism hardening) — after TASK-039
-3. TASK-041 (dist check) — after TASK-039 (independent of 040/042)
+1. ~~TASK-039 (git baseline)~~ — DONE (2026-09-23)
+2. TASK-040 (Low cleanup + determinism hardening) — dispatch now
+3. TASK-041 (dist check) — READY, independent of 040/042
 4. TASK-042 (main.ts split) — after TASK-040
 5. Code Review (Iteration 9) — after all 4 tasks DONE
 6. Bird's Eye Review — if the Bird's Eye Rule is satisfied

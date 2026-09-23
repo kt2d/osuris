@@ -27,7 +27,7 @@ Single player, browser-based puzzle game enthusiasts.
 
 ## Current Iteration
 
-Iteration 9 (Quality Sweep): PLANNING COMPLETE (2026-09-23). Plan v11.0 created. 4 tasks: TASK-039 (git baseline — clear polluted index, extend `.gitignore`, initial commit), TASK-040 (Low cleanup bundle — CR-IT5-001 dead tolerance, CR-IT8-001 comment + Test 70 pin, CR-008-002 JSDoc, LIM-021-2 re-scoped as determinism hardening via `randomSource()` seam + `TestGame`), TASK-041 (dist check — `scripts/check-dist.mjs` wired to `postbuild`), TASK-042 (main.ts split — 2,900+ lines → thin entry + 10 files under `src/tests/`). Challenge Agent review complete (2026-09-23): design sound; 8 findings all accepted (F-IT9-01 through F-IT9-08); task packets incorporate all corrections. No code changes yet. Baseline: 463/463 tests, `npx tsc` 0 errors, `npm run build` succeeds.
+Iteration 9 (Quality Sweep): IN PROGRESS (2026-09-23). Plan v11.0. 4 tasks: TASK-039 DONE (git baseline — commit `5b34bc2`, 99 files, index clean). TASK-040 READY (Low cleanup bundle — CR-IT5-001 dead tolerance, CR-IT8-001 comment + Test 70 pin, CR-008-002 JSDoc, LIM-021-2 re-scoped as determinism hardening via `randomSource()` seam + `TestGame`), TASK-041 READY (dist check — `scripts/check-dist.mjs` wired to `postbuild`), TASK-042 blocked by TASK-040 (main.ts split — 2,900+ lines → thin entry + 10 files under `src/tests/`). Challenge Agent review complete (2026-09-23): design sound; 8 findings all accepted (F-IT9-01 through F-IT9-08); task packets incorporate all corrections. Baseline: 463/463 tests, `npx tsc` 0 errors, `npm run build` succeeds.
 
 Iteration 8 (Compression System Fix): COMPLETE (2026-09-18). Plan v10.0. 3 tasks: TASK-036, TASK-037, TASK-038 all DONE. Code Review PASS. Bird's Eye Review COMPLETE (project health **Healthy**).
 
@@ -347,7 +347,7 @@ Fix Summary: Added Enter -> RESTART mapping in InputManager. Game.processInput()
 
 ---
 
-## Risk-005: No Version Control Baseline (Bird's Eye Review 2026-09-18)
+## Risk-005: No Version Control Baseline (RESOLVED)
 
 Description: The git repository has zero commits; all files are untracked. Scope attribution in implement/review reports is done by file reading, not `git diff`; no change history, bisect, or rollback is possible.
 
@@ -355,7 +355,7 @@ Observed In: Noted in 6+ reports (e.g., 40_code_review.md Iteration 8 Review Not
 
 Priority: Medium (fix is one-time and cheap)
 
-Mitigation: At the start of the next iteration: an initial baseline commit (respecting the existing `.gitignore` for `node_modules/`/`dist/`) plus per-task or per-iteration commits thereafter.
+Status: RESOLVED by TASK-039 (2026-09-23). Initial baseline commit `5b34bc2` created with 99 project files. `.gitignore` extended with `node_modules/` and `dist/`. Per-task commit discipline now active.
 
 ---
 
@@ -405,8 +405,8 @@ Reason: The project's most expensive recurring bug class (3 instances: Debt-005,
 
 # Planning Guidance
 
-- TASK-001 through TASK-038 are all DONE.
-- Current iteration is Iteration 9 (Quality Sweep), Plan v11.0, PLANNING COMPLETE (2026-09-23). 4 tasks created: TASK-039 (git baseline), TASK-040 (Low cleanup + determinism), TASK-041 (dist check), TASK-042 (main.ts split). Challenge Agent review complete (2026-09-23); all 8 findings accepted and incorporated into task packets.
+- TASK-001 through TASK-039 are all DONE.
+- Current iteration is Iteration 9 (Quality Sweep), Plan v11.0, IN PROGRESS (2026-09-23). TASK-039 DONE (git baseline, commit `5b34bc2`). TASK-040 and TASK-041 are READY; TASK-042 blocked by TASK-040. Challenge Agent review complete (2026-09-23); all 8 findings accepted and incorporated into task packets.
 - Iteration 8 (Compression System Fix) is COMPLETE (Code Review PASS 2026-09-18). Bird's Eye Review COMPLETE (project health Healthy).
 - Iteration 7 (Bug Fixes) is COMPLETE (2026-09-01). Tasks: TASK-030 through TASK-035 are DONE.
 - Test suite total is 463 assertions (stable; Test 42 is deterministic under current code — F-IT9-02).
@@ -442,6 +442,14 @@ Self-contained. Implement Agent needs only Task Packet + Project State + Next Ac
 ---
 
 # Change Log
+
+## 2026-09-23
+
+Updated By: Implement Agent
+
+Summary: TASK-039 completed (Iteration 9, first task). Established the git baseline: extended `.gitignore` with `node_modules/` and `dist/`, cleared the polluted index (1,655 staged files) via `git reset`, re-staged 99 project files, and created the initial baseline commit `5b34bc2` ("Initial baseline: OSURIS v0.1.0 (Iteration 8 complete)"). All 8 acceptance criteria verified: index clean (0 node_modules/dist entries), 99 files (< 100), package-lock.json present, opencode.json absent, git status clean, `npx tsc` 0 errors. No source code modified. One implementation decision documented (DEC-039-IMPL-1: local git identity set to `agent@osuris.dev`). Risk-005 (No Version Control Baseline) is now RESOLVED. Artifact: .workflow_doc/30_implement.md. Next: dispatch TASK-040 (Low cleanup + determinism) and/or TASK-041 (dist check) — both now unblocked.
+
+---
 
 ## 2026-09-23
 
