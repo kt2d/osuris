@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #1a1a2e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: monospace;
+  color: #e0e0e0;
+}
+
+#game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-canvas {
+  border: 2px solid #4a4a6a;
+  background-color: #0f0f23;
+}
+
+/* Suppress the default browser focus ring; the border-color change below
+   is the visible focus indicator (right wall color). */
+#game-canvas:focus {
+  outline: none;
+  border-color: #6bff6b;
+}

@@ -1,0 +1,32 @@
+{
+	"name": "Opencode Sandbox",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainer-community/devcontainer-features/opencode.ai:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "latest"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode"
+			]
+		},
+		"settings": {
+				"remote.localPortHost": "allInterfaces"
+		}
+	},
+	// 必要に応じて LSP 用ポートやデバッグ用ポートを開放
+	"forwardPorts": [
+		3000,
+		4097
+	],
+	"postCreateCommand": "npm install",
+	"remoteUser": "vscode"
+}

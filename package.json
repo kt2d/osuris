@@ -1,0 +1,19 @@
+{
+  "name": "osuris",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Horizontal compression puzzle game",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "postbuild": "cp index.html dist/ && sed -i 's|src=\"./src/entry.js\"|src=\"entry.js\"|' dist/index.html",
+    "dev": "vite dev",
+    "preview": "vite preview",
+    "start": "npx serve dist"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "typescript": "^5.4.0",
+    "vite": "^8.2.1"
+  }
+}

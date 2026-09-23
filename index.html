@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSURIS - Horizontal Compression Puzzle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #1a1a2e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: monospace;
+      color: #e0e0e0;
+    }
+
+    #game-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #game-canvas {
+      border: 2px solid #4a4a6a;
+      background-color: #0f0f23;
+    }
+
+    /* Suppress the default browser focus ring; the border-color change below
+       is the visible focus indicator (right wall color). */
+    #game-canvas:focus {
+      outline: none;
+      border-color: #6bff6b;
+    }
+
+    #instructions {
+      text-align: center;
+      font-size: 14px;
+      color: #8888aa;
+      line-height: 1.6;
+    }
+
+    #instructions kbd {
+      background-color: #2a2a4a;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid #4a4a6a;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrapper">
+    <div id="game-container">
+      <canvas id="game-canvas" tabindex="0"></canvas>
+    </div>
+    <div id="instructions">
+      <kbd>Space</kbd> Rotate piece &nbsp;|&nbsp;
+      <kbd>&uarr;</kbd> Wall up &nbsp;|&nbsp;
+      <kbd>&darr;</kbd> Wall down
+    </div>
+  </div>
+  <script type="module" src="./src/entry.js"></script>
+</body>
+</html>
