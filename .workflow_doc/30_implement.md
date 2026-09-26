@@ -2,162 +2,136 @@
 
 Author: Implement Agent
 
-Date: 2026-09-23
+Date: 2026-09-26
 
-Task-ID: TASK-039
+Task-ID: TASK-041
 
 ---
 
 # Task Summary
 
-Title: Establish the Git Baseline Commit
+Title: Add Automated Dist-Output Verification to the Build Pipeline
 
-Objective: Clear the polluted git index, extend `.gitignore`, and create the initial baseline commit so that all subsequent work in this project has a VCS baseline for `git diff` attribution.
+Objective: Create `scripts/check-dist.mjs` — a standalone Node ESM script that verifies the dist output after a build — and wire it into the `postbuild` npm script so `npm run build` catches dist problems before CI deploy.
 
-Summary: Extended `.gitignore` with `node_modules/` and `dist/`, cleared the polluted git index (1,655 staged files) via `git reset`, re-staged all project files (99 files), and created the initial baseline commit. All 8 acceptance criteria verified.
+Summary:
+Created `scripts/check-dist.mjs` (plain Node ESM, no TypeScript, no external dependencies) implementing the three required checks — `dist/index.html` exists, `dist/index.html` contains `src="entry.js"`, and `dist/entry.js` exists — and wired it to `package.json` `postbuild`. The script resolves all paths from its own location via `import.meta.url`/`fileURLToPath` (cwd-independent) and fails with a clear `stderr` message plus a non-zero exit on any failed check. All 8 Acceptance Criteria verified against the live codebase. The script was implemented verbatim from the Task Packet's reference implementation; one implementation decision (the `path.resolve` path form vs. the DEC-041-2 prose `new URL(...)` form) and one factual correction to the packet's `styles.css` assumption are documented below. No design deviations.
 
 ---
 
 # Acceptance Criteria
 
-## Criterion 1
-
-`.gitignore` contains `node_modules/` and `dist/` (in addition to the existing entries).
+## AC-1: `scripts/check-dist.mjs` exists and is a valid Node ESM script (no TypeScript, no external dependencies)
 
 Status: Pass
 
-Evidence: `.gitignore` now contains 4 lines: `.DS_Store`, `opencode.json`, `node_modules/`, `dist/`.
+Evidence: File created at `scripts/check-dist.mjs`. `.mjs` extension forces ESM. Imports are exclusively Node built-ins with the `node:` prefix (`node:fs`, `node:url`, `node:path`); no third-party or TypeScript imports. The script executed successfully under `node scripts/check-dist.mjs` (exit 0 on a good dist), which proves it is valid, runnable ESM.
 
-Notes: Existing entries preserved; two new lines appended.
+Notes: Implemented verbatim from the Task Packet's "Implementation Notes → Script content (reference implementation)".
 
-## Criterion 2
-
-`git log --oneline` shows exactly 1 commit.
+## AC-2: The script resolves all paths from its own location (uses `import.meta.url` or `fileURLToPath`), NOT from `process.cwd()`
 
 Status: Pass
 
-Evidence: `git log --oneline` outputs: `5b34bc2 Initial baseline: OSURIS v0.1.0 (Iteration 8 complete)` — exactly 1 line.
+Evidence: `const __dirname = path.dirname(fileURLToPath(import.meta.url));` then `const distDir = path.resolve(__dirname, '../dist');`. No reference to `process.cwd()` exists in the script.
 
-Notes: Root commit on branch `main`.
+Notes: Verified independently by invoking the script from a different working directory — `cd /tmp && node /workspaces/osuris/scripts/check-dist.mjs` — all three checks still resolved and passed (exit 0), confirming cwd-independence (F-IT9-05).
 
-## Criterion 3
-
-`git ls-files | grep -c '^node_modules/\|^dist/'` outputs `0`.
+## AC-3: The script checks: (1) `dist/index.html` exists, (2) `dist/index.html` contains `src="entry.js"`, (3) `dist/entry.js` exists
 
 Status: Pass
 
-Evidence: Command outputs `0` (verified both before and after the commit).
+Evidence: All three checks implemented (DEC-041-3). Build output shows the three `✓` lines. Failure paths independently exercised: corrupting `dist/index.html` (reverting the sed rewrite) made check #2 fail; deleting `dist/entry.js` made check #3 fail — each printed its own `✗` line.
 
-Notes: No `node_modules/` or `dist/` files in the index.
-
-## Criterion 4
-
-`git ls-files | wc -l` is less than 100 (not 1655).
+## AC-4: On failure, the script prints a clear message to `stderr` and exits with a non-zero status
 
 Status: Pass
 
-Evidence: `git ls-files | wc -l` outputs `99`.
+Evidence: `check()` writes failures via `console.error` (→ `stderr`); the failure block writes `check-dist: FAILED — fix the build before deploying.` via `console.error` and calls `process.exit(1)`. Verified: corrupted `dist/index.html` → clear per-check message + `FAILED` line + exit 1; deleted `dist/entry.js` → same, exit 1.
 
-Notes: Down from 1,655 (the polluted index) to 99 (clean project files).
-
-## Criterion 5
-
-`git ls-files` includes `package-lock.json`.
+## AC-5: `package.json` `postbuild` includes `&& node scripts/check-dist.mjs` at the end
 
 Status: Pass
 
-Evidence: `package-lock.json` is present in `git ls-files` output.
+Evidence: `package.json` `postbuild` now ends with `... dist/index.html && node scripts/check-dist.mjs`. Confirmed in the `npm run build` output, which echoes the full `postbuild` command and then shows the `check-dist:` output.
 
-Notes: Required for CI `npm ci` (DEC-039-3).
-
-## Criterion 6
-
-`git ls-files` does NOT include `opencode.json`.
+## AC-6: `npm run build` succeeds (the full build + check pipeline works)
 
 Status: Pass
 
-Evidence: `opencode.json` is not in `git ls-files` output (excluded by `.gitignore`).
+Evidence: `npm run build` → `tsc` compiles (exit 0), `postbuild` copies + rewrites `index.html`, then `check-dist` runs and reports `all checks passed.` Overall exit 0.
 
-Notes: Internal provider URLs remain untracked (DEC-039-2).
-
-## Criterion 7
-
-`git status` is clean after the commit (no untracked, no modified).
+## AC-7: `npx tsc && node dist/main.js` still reports `Failed: 0` (the standard test flow is unaffected)
 
 Status: Pass
 
-Evidence: `git status` outputs: `On branch main / nothing to commit, working tree clean`.
+Evidence: `npx tsc && node dist/main.js` → `Passed: 473 / Failed: 0 / Total: 473 / All tests PASSED.`, exit 0. This flow does not invoke `postbuild`, so the dist check is not executed — confirming DEC-041-1 (the check is intentionally outside the test-suite flow).
 
-Notes: All project files are committed; no untracked or modified files remain.
-
-## Criterion 8
-
-`npx tsc` still reports 0 errors (sanity check: the commit did not modify source).
+## AC-8: `npx tsc --noEmit` exits with status 0
 
 Status: Pass
 
-Evidence: `npx tsc` completed with no output (0 errors).
-
-Notes: No source code was modified — only `.gitignore` and git metadata changed.
+Evidence: `npx tsc --noEmit` → exit 0, no diagnostics.
 
 ---
 
 # Completed Work
 
-実施内容
-
-- Extended `.gitignore` with `node_modules/` and `dist/` (appended after existing entries).
-- Cleared the polluted git index (1,655 staged files) using `git reset` (safe: zero commits existed).
-- Staged all project files via `git add .` (respects updated `.gitignore`).
-- Verified the index before committing: 99 files, 0 `node_modules/`/`dist/` entries, `package-lock.json` present, `opencode.json` absent.
-- Created the initial baseline commit: `5b34bc2 Initial baseline: OSURIS v0.1.0 (Iteration 8 complete)`.
-- Post-commit verification: 1 commit, clean working tree, 0 `node_modules/`/`dist/` in index, `npx tsc` 0 errors.
+- Created the `scripts/` directory (did not previously exist).
+- Created `scripts/check-dist.mjs` — a standalone Node ESM verification script (no TypeScript, no external dependencies) implementing the three required checks and the fail-with-clear-message + non-zero-exit behavior.
+- Updated `package.json` `postbuild` to append `&& node scripts/check-dist.mjs` so `npm run build` (the CI build command) runs the check.
+- Verified all 8 Acceptance Criteria against the live codebase, including the two failure scenarios (corrupted `index.html`, missing `entry.js`) and the cwd-independence scenario.
+- Resolved the Task Packet's open question about `styles.css` (see Known Limitations / Review Notes).
 
 ---
 
 # Modified Files
 
-## File 1
+## File
 
-Path: `.gitignore`
+Path: `scripts/check-dist.mjs`
 
-Purpose: Exclude build artifacts and internal config from version control.
+Purpose: New standalone Node ESM script that verifies the `dist/` output after a build.
 
-Summary of Changes: Appended `node_modules/` and `dist/` (one per line) after the existing `.DS_Store` and `opencode.json` entries.
+Summary of Changes: New file. Resolves `distDir` from `import.meta.url` (cwd-independent). Checks `dist/index.html` existence, `src="entry.js"` content, and `dist/entry.js` existence; logs per-check `✓`/`✗`; on any failure prints an actionable message to `stderr` and exits 1.
+
+## File
+
+Path: `package.json`
+
+Purpose: Wire the dist check into the build pipeline.
+
+Summary of Changes: `scripts.postbuild` changed from `cp index.html dist/ && sed -i '...' dist/index.html` to the same command with ` && node scripts/check-dist.mjs` appended. No other script or field changed.
 
 ---
 
 # Implementation Decisions
 
-実装時に行った重要な判断
-
-## DEC-039-1 (from Task Packet)
+## DEC-041-IMPL-1: Path resolution form (reference-implementation `path.resolve` vs. DEC-041-2 prose `new URL(...)`)
 
 Type: Task Decision
 
-Description: Used `git reset` (no arguments) to clear the index rather than `git rm -r --cached .`.
+Description: The Task Packet presents two cwd-independent path-resolution forms: the DEC-041-2 *Constraint Description* shows `const distDir = new URL('../dist/', import.meta.url);` (a `file://` URL object), while the *Implementation Notes → reference implementation* uses `const __dirname = path.dirname(fileURLToPath(import.meta.url)); const distDir = path.resolve(__dirname, '../dist');` (a filesystem path string). The implemented script uses the latter (the reference implementation).
 
-Reason: With zero commits, `git reset` safely empties the index with nothing to lose. Simpler and safer than the fallback approach.
+Reason: Both forms satisfy AC-2 ("uses `import.meta.url` or `fileURLToPath`") and the cwd-independence intent (F-IT9-05). The reference implementation in the Implementation Notes is the concrete, copy-paste-ready version the packet provides; its `path.resolve`/`path.join` output is a filesystem path directly consumable by `fs.existsSync`/`readFileSync`/`path.join` without a `fileURLToPath` conversion at each use site.
 
-Impact: None negative. Index cleared in one command.
+Impact: None on behavior. Documented so the Code Review Agent does not flag the difference from the DEC-041-2 prose snippet as a deviation. This is compliance with the packet's own reference implementation, not a design change.
 
-## DEC-039-IMPL-1
+## DEC-041-IMPL-2: Challenge Agent not invoked
 
 Type: Task Decision
 
-Description: Set local git identity (`user.email` = `agent@osuris.dev`, `user.name` = `Implement Agent`) for the repository since no global git config was present.
+Description: The Challenge Agent was not consulted for this task.
 
-Reason: `git commit` requires an author identity. Local config avoids polluting the user's global settings.
+Reason: The Challenge Usage guidance targets multiple-strategy / complex-algorithm / significant-refactor / performance / concurrency / ambiguous-intent situations. This task is a well-specified, low-risk script creation with a full reference implementation provided in the packet; there were no competing strategies or architectural trade-offs. Invoking the advisor would add cost without changing the outcome.
 
-Impact: The baseline commit is attributed to "Implement Agent". Future commits in this repo will use the same identity unless changed.
+Impact: None. Recorded so downstream agents know the omission was deliberate, not an oversight.
 
 ---
 
 # Design Deviations
 
-Task Packet の設計から変更した内容
-
-None. Implementation followed the Task Packet's command sequence exactly.
+None. The script was implemented verbatim from the Task Packet's reference implementation, and the `package.json` change matches the packet's specified `postbuild` string exactly. The `styles.css` item below is a factual correction to a packet assumption, not a design deviation (the script correctly does NOT check CSS, per the packet's own "What the script does NOT check" scope).
 
 ---
 
@@ -165,56 +139,64 @@ None. Implementation followed the Task Packet's command sequence exactly.
 
 ## Executed Tests
 
-- `git ls-files | grep -c '^node_modules/\|^dist/'` → 0 (pre-commit and post-commit)
-- `git ls-files | wc -l` → 99 (< 100)
-- `git ls-files | grep 'package-lock.json'` → present
-- `git ls-files | grep 'opencode.json'` → not present
-- `git log --oneline` → exactly 1 commit
-- `git status` → clean (nothing to commit, working tree clean)
-- `npx tsc` → 0 errors
+- Baseline (pre-change): `npx tsc --noEmit` (exit 0); `npm run build` (exit 0, old `postbuild`); `node dist/main.js` (473/473, Failed: 0).
+- `npm run build` with the new `postbuild` → build + check pipeline; all three `check-dist` checks pass; exit 0.
+- `npx tsc --noEmit` → exit 0.
+- `npx tsc && node dist/main.js` → 473/473, Failed: 0, exit 0 (standard test flow unaffected — DEC-041-1).
+- Verification step 3: `rm dist/entry.js` → `npm run build` → `tsc` re-emits `entry.js`, check passes, exit 0.
+- Verification step 4 (corrupt): revert `src="entry.js"` in `dist/index.html` → run `node scripts/check-dist.mjs` directly → check #2 fails with a clear `✗` + `FAILED` message, exit 1.
+- Extra (missing file): `rm dist/entry.js` → run `node scripts/check-dist.mjs` directly (no rebuild) → check #3 fails, exit 1.
+- Extra (cwd-independence, AC-2): `cd /tmp && node /workspaces/osuris/scripts/check-dist.mjs` → all checks pass, exit 0.
+- Restored a clean `dist/` with a final `npm run build` after the destructive checks.
 
 ## Results
 
 Pass
 
-Summary: All 8 acceptance criteria verified independently. The commit contains the correct file set with no source modifications.
+Summary: All 8 Acceptance Criteria verified. The three positive checks pass on a good build; both failure scenarios (corrupted `index.html`, missing `entry.js`) produce a clear `stderr` message and exit 1; cwd-independence confirmed. The standard test flow (`npx tsc && node dist/main.js`) is unchanged (473/473, Failed: 0), confirming DEC-041-1.
 
 ---
 
 # Known Limitations
 
-## LIM-039-1
+## LIM-041-1: Scope of the dist check
 
-Description: The git identity is set to a placeholder (`agent@osuris.dev`). This is sufficient for baseline purposes but a team-standard identity may be preferred for future commits.
+Description: The script verifies existence/content of `dist/index.html` and existence of `dist/entry.js`. It does not verify that `dist/entry.js` is runtime-correct (i.e., that it actually boots the game), nor does it check `dist/main.js` (a dev artifact) or CSS.
 
-Impact: Cosmetic only. Does not affect functionality or attribution quality.
+Impact: A syntactically-valid but logically-broken `entry.js` (e.g., a runtime `ReferenceError` at module top-level) would pass the existence check. This is by design and matches the Task Packet scope; the check is a cheap build-sanity gate, not a runtime test.
 
-Possible Future Solution: Configure a project-standard git identity in the devcontainer or CI if needed.
+Possible Future Solution: A headless smoke test (load `dist/entry.js` under a DOM shim) — out of scope for this task and heavier than the MVP build gate warrants.
+
+## LIM-041-2: `src/styles.css` is an orphaned file (correction to a Task Packet assumption)
+
+Description: The Task Packet's "What the script does NOT check" note assumed `styles.css` "is in `src/` and referenced from `index.html`" (the packet author left this as an open question: "actually, let me check"). Verified this session: `src/styles.css` exists (591 bytes) but is referenced **nowhere** in `src/`, `index.html`, or `vite.config.ts` (grep for `styles.css` and `.css'`/`.css"` imports returned no matches). `index.html` has no `<link rel="stylesheet">` or `.css` reference; the only external reference is `<script type="module" src="./src/entry.js">`.
+
+Impact: None for this task — the check correctly does not test CSS, so the task is unaffected regardless of the CSS question. The factual correction matters for future agents: `src/styles.css` appears to be dead/unreferenced, not "referenced from index.html".
+
+Possible Future Solution: A separate cleanup task should confirm whether `styles.css` is intended to be loaded (and if so, wire it in) or delete it as dead. Recorded as a Review Note for the Iteration 9 Code Review Agent.
 
 ---
 
 # Deliverables
 
-作成・更新した成果物
-
-- Extended `.gitignore` (added `node_modules/` and `dist/`).
-- One git commit on `main`: `5b34bc2 Initial baseline: OSURIS v0.1.0 (Iteration 8 complete)` — 99 files, 21,019 insertions.
+- Source Code: `scripts/check-dist.mjs` (new).
+- Build config: `package.json` (`postbuild` updated).
+- Documentation: this Implementation Report (`.workflow_doc/30_implement.md`); Project State and Next Actions updated.
 
 ---
 
 # Review Notes
 
-Code Review Agent に伝えるべき事項
-
-- The implementation is purely VCS metadata — no source code, tests, or build config were modified.
-- The commit message format `Initial baseline: OSURIS v0.1.0 (Iteration 8 complete)` was specified in the Task Packet.
-- Per the Project State Planning Guidance, each subsequent task (TASK-040, TASK-041, TASK-042) should be committed separately now that the baseline exists.
+- **Verify the pipeline wiring, not just the script.** The task's value is that `npm run build` (the CI build command in `.github/workflows/deploy.yml`) now fails when the dist output is broken. Confirm `postbuild` ends with `&& node scripts/check-dist.mjs` and that `npm run build` runs the check (visible in the build output).
+- **DEC-041-IMPL-1 is not a deviation.** The script follows the packet's own reference implementation (`path.resolve(__dirname, ...)`), which differs only cosmetically from the `new URL(...)` form shown in the DEC-041-2 constraint prose. Both satisfy AC-2.
+- **DEC-041-IMPL-2 (Challenge not invoked)** was a deliberate scope judgment for a low-risk, fully-specified task; flag if the review process requires advisor coverage for every task regardless of risk.
+- **LIM-041-2 is a real finding for triage.** `src/styles.css` is unreferenced. This does not block TASK-041 but is a candidate for the Iteration 9 cleanup backlog.
+- The script intentionally does NOT run under the standard `npx tsc && node dist/main.js` test flow (DEC-041-1); do not treat "the check didn't run in the test flow" as a defect.
 
 ---
 
 # Recommended Next Actions
 
-次工程への提案
-
-- [ ] Dispatch TASK-040 (Low cleanup + determinism hardening) — now unblocked.
-- [ ] Dispatch TASK-041 (dist check) — now unblocked, independent of TASK-040.
+- [ ] Dispatch Code Review for Iteration 9 (all 4 tasks — TASK-039/040/041/042 — are now DONE).
+- [ ] Triage LIM-041-2: decide whether `src/styles.css` should be wired into the build or removed as dead (separate cleanup task; not this task's scope).
+- [ ] Optional (future): add a headless smoke test that actually boots `dist/entry.js` if the build gate needs to catch runtime-level breakage (LIM-041-1).

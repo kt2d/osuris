@@ -1,8 +1,8 @@
 # Next Actions
 
-Last Updated: 2026-09-23
+Last Updated: 2026-09-26
 
-Updated By: Plan Agent
+Updated By: Implement Agent
 
 ---
 
@@ -11,9 +11,9 @@ Updated By: Plan Agent
 Iteration 9 (Quality Sweep) — Plan v11.0 created 2026-09-23.
 
 - TASK-039: DONE (2026-09-23) — Git baseline established. Commit `5b34bc2` (99 files, 21,019 insertions). `.gitignore` extended with `node_modules/` and `dist/`. Index cleared from 1,655 → 99 files. Report in `.workflow_doc/30_implement.md`.
-- TASK-040: READY — Low cleanup bundle + determinism hardening. Remove Test 42 dead tolerance (CR-IT5-001), add CR-IT8-001 comment + Test 70 pin, fix CR-IT8-002 JSDoc, add `randomSource()` seam + `TestGame` (LIM-021-2 re-scoped), update README. Priority: High.
-- TASK-041: READY — Add `scripts/check-dist.mjs` and wire to `postbuild`. Priority: Medium. Independent of TASK-040/042.
-- TASK-042: BLOCKED (by TASK-040) — Split `src/main.ts` into `src/tests/` component files (thin entry + 10 files). Priority: High.
+- TASK-040: DONE (2026-09-25) — Low cleanup bundle + determinism hardening. Test 42 dead tolerance removed (CR-IT5-001), `pushBlocksRight` comment added (CR-IT8-001), `RightWall.shiftVertical` JSDoc fixed (CR-IT8-002), `randomSource()` seam + `TestGame` added, Test 70 added (10 assertions), README updated. 473/473 tests, 71 sections. Report in `.workflow_doc/30_implement.md`.
+- TASK-041: DONE (2026-09-26) — Added `scripts/check-dist.mjs` (Node ESM, cwd-independent via `import.meta.url`, no external deps) and wired it to `package.json` `postbuild` (`&& node scripts/check-dist.mjs`), so `npm run build` (the CI build) verifies dist output. All 8 ACs verified; 473/473 tests unchanged, standard test flow unaffected. Report in `.workflow_doc/30_implement.md`.
+- TASK-042: DONE (2026-09-25) — Split `src/main.ts` into `src/tests/` component files (thin entry + 10 files). Priority: High. Count-identity verified: 473 assertions, 71 sections, `Failed: 0`, stable ×2, no ReferenceError/TypeError; `tsc --noEmit`/`tsc`/`npm run build` all exit 0. Report in `.workflow_doc/30_implement.md`.
 
 Iteration 8 (Compression System Fix) — Plan v10.0 created 2026-09-03. Iteration 8 is COMPLETE (all 3 tasks DONE).
 
@@ -30,7 +30,7 @@ All prior tasks through Iteration 7 are DONE.
 
 # Backlog
 
-- Iteration 9 (Quality Sweep) is IN PLANNING (Plan v11.0 created 2026-09-23; 4 task packets written).
+- Iteration 9 (Quality Sweep) — all 4 tasks DONE (TASK-039, TASK-040, TASK-041, TASK-042); Code Review pending.
 - Debt-002 (rotation origin): Low priority, future iteration. Begin with a Challenge Agent cycle.
 - SRS-style rotation with wall kicks: Future iteration (largest remaining UX debt).
 - Additional piece types: Future iteration (after the above).
@@ -39,6 +39,9 @@ All prior tasks through Iteration 7 are DONE.
 
 # Workflow Notes
 
+- **2026-09-26 TASK-041 completed (Iteration 9, third dispatched task — final code task):** Added `scripts/check-dist.mjs` (Node ESM dist-output verifier: `dist/index.html` exists + contains `src="entry.js"` + `dist/entry.js` exists; cwd-independent via `import.meta.url`; fails with a clear `stderr` message + non-zero exit) and wired it to `package.json` `postbuild` (`&& node scripts/check-dist.mjs`), so `npm run build` (the CI build in `.github/workflows/deploy.yml`) now gates deploys on dist integrity. All 8 ACs verified; 473/473 tests unchanged, standard test flow (`npx tsc && node dist/main.js`) unaffected (confirms DEC-041-1 — the check is not in the test suite). No design deviations. Factual correction (LIM-041-2): `src/styles.css` is orphaned (referenced nowhere in `src/`, `index.html`, `vite.config.ts`) — the packet's assumption that it is "referenced from index.html" is false (out of scope; flagged for cleanup). Report in `.workflow_doc/30_implement.md`. **All 4 Iteration-9 tasks (TASK-039/040/041/042) are now DONE → next dispatch: Code Review (Iteration 9).**
+- **2026-09-25 TASK-042 completed (Iteration 9, third task):** Split the monolithic `src/main.ts` (2,903 lines) into a thin 19-line entry point plus 10 files under `src/tests/` (`harness.ts`, `mocks.ts`, 8 component `*.test.ts`). Verbatim move via boundary-based block extraction; each test assigned to its owning component file (component ownership for the 12 tests omitted by the DEC-042-6 grouping table — see DEV-042-1), emitted in ascending order within each file. Cross-file shared helpers (`shapeToKey`/`shapesEqual`) moved to `mocks.ts` (DEV-042-2). Count-identity verified: 473 assertions, 71 sections, `Failed: 0`, stable ×2, no ReferenceError/TypeError; `tsc --noEmit`/`tsc`/`npm run build` exit 0; README structure tree updated. Report in `.workflow_doc/30_implement.md`. Next dispatch: TASK-041 (Medium, dist check) was READY; now DONE.
+- **2026-09-25 TASK-040 completed (Iteration 9, second task):** Low cleanup bundle + determinism hardening. Test 42 dead tolerance removed, `pushBlocksRight` JSDoc comment added, `RightWall.shiftVertical` JSDoc fixed, `randomSource()` seam + `TestGame` added, Test 70 added (10 assertions), README updated. 473/473 tests, 71 sections. Report in `.workflow_doc/30_implement.md`. Next dispatch: TASK-042 (High, main.ts split) and TASK-041 (Medium, dist check) are both READY.
 - **2026-09-23 TASK-039 completed (Iteration 9, first task):** Git baseline established. Commit `5b34bc2` (99 files). `.gitignore` extended with `node_modules/` and `dist/`. Risk-005 RESOLVED. Per-task commit discipline now active. Next dispatch: TASK-040 (High) and TASK-041 (Medium) are both READY. Report in `.workflow_doc/30_implement.md`.
 - **2026-09-23 Plan v11.0 created (Iteration 9 Quality Sweep):** 4 tasks created: TASK-039 (git baseline), TASK-040 (Low cleanup + determinism), TASK-041 (dist check), TASK-042 (main.ts split). Challenge Agent review (2026-09-23) complete; all 8 findings (F-IT9-01 through F-IT9-08) accepted and incorporated into task packets. Execution order: TASK-039 → TASK-040 → TASK-042; TASK-041 independent. Task packets in `.workflow_doc/25_task_packets/`. Next dispatch: TASK-039 (git baseline) — the first and only READY task with no dependencies.
 - **2026-09-23 Challenge Agent review completed (Iteration 9 Quality sweep design):** Advisory review of the proposed TASK-039/040/041/042 design (per Recommendation-BE-010). Verdict: design sound; cleanup-before-split ordering endorsed; split design verified safe (ESM module-evaluation ordering; no cross-section shared variables beyond harness/mocks). Task packets must carry these corrections before dispatch: F-IT9-01 (clear the git index before the baseline commit — 1,560 node_modules/dist files are already staged; .gitignore does not unstage them), F-IT9-02 (TASK-040.5 premise wrong — re-scope as determinism hardening; Test 42 is deterministic today), F-IT9-03 (TASK-042 ACs: 70→71 sections after TASK-040; add count-baseline capture step), F-IT9-04/05/06/07/08 (Test 70(b) is the new pin; add dist/entry.js check; merge Test 6 into activePiece.test.ts; write the import rule into the TASK-042 packet). Report in `.workflow_doc/20_challenge.md`.
@@ -62,16 +65,16 @@ All prior tasks through Iteration 7 are DONE.
 
 Runner dispatches the first READY task whose dependencies are all DONE, in priority order (High > Medium > Low).
 
-Current dispatch (Iteration 9): TASK-039 is DONE. **TASK-040** (Low cleanup + determinism, High priority) and **TASK-041** (dist check, Medium priority) are both READY. Dispatch TASK-040 first per priority. After TASK-040 is DONE, TASK-042 becomes READY.
+Current dispatch (Iteration 9): all 4 tasks — TASK-039, TASK-040, TASK-041, TASK-042 — are DONE. No READY tasks remain in Iteration 9. **Next dispatch: Code Review (Iteration 9).**
 
 ## Task Dependencies
 
 ```
 Iteration 9 (Quality Sweep):
 TASK-039 (git baseline) → DONE (2026-09-23, commit 5b34bc2)
-TASK-040 (Low cleanup + determinism) → READY
-TASK-041 (dist check) → READY
-TASK-042 (main.ts split) → BLOCKED (dep: TASK-040)
+TASK-040 (Low cleanup + determinism) → DONE (2026-09-25)
+TASK-041 (dist check) → DONE (2026-09-26)
+TASK-042 (main.ts split) → DONE (2026-09-25; dep TASK-040 DONE)
 
 Iteration 8 (Compression System Fix) — COMPLETE:
 TASK-036 (CompressionSystem fix) → DONE (2026-09-08)
@@ -86,10 +89,10 @@ TASK-030 through TASK-035 → DONE
 Recommended execution order (Iteration 9):
 
 1. ~~TASK-039 (git baseline)~~ — DONE (2026-09-23)
-2. TASK-040 (Low cleanup + determinism hardening) — dispatch now
-3. TASK-041 (dist check) — READY, independent of 040/042
-4. TASK-042 (main.ts split) — after TASK-040
-5. Code Review (Iteration 9) — after all 4 tasks DONE
+2. ~~TASK-040 (Low cleanup + determinism hardening)~~ — DONE (2026-09-25)
+3. ~~TASK-041 (dist check)~~ — DONE (2026-09-26)
+4. ~~TASK-042 (main.ts split)~~ — DONE (2026-09-25)
+5. Code Review (Iteration 9) — **NEXT DISPATCH** (all 4 tasks now DONE)
 6. Bird's Eye Review — if the Bird's Eye Rule is satisfied
 
 ## Completion Rule

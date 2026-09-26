@@ -1,8 +1,8 @@
 # Project State
 
-Last Updated: 2026-09-23
+Last Updated: 2026-09-26
 
-Updated By: Plan Agent
+Updated By: Implement Agent
 
 ---
 
@@ -27,7 +27,7 @@ Single player, browser-based puzzle game enthusiasts.
 
 ## Current Iteration
 
-Iteration 9 (Quality Sweep): IN PROGRESS (2026-09-23). Plan v11.0. 4 tasks: TASK-039 DONE (git baseline — commit `5b34bc2`, 99 files, index clean). TASK-040 READY (Low cleanup bundle — CR-IT5-001 dead tolerance, CR-IT8-001 comment + Test 70 pin, CR-008-002 JSDoc, LIM-021-2 re-scoped as determinism hardening via `randomSource()` seam + `TestGame`), TASK-041 READY (dist check — `scripts/check-dist.mjs` wired to `postbuild`), TASK-042 blocked by TASK-040 (main.ts split — 2,900+ lines → thin entry + 10 files under `src/tests/`). Challenge Agent review complete (2026-09-23): design sound; 8 findings all accepted (F-IT9-01 through F-IT9-08); task packets incorporate all corrections. Baseline: 463/463 tests, `npx tsc` 0 errors, `npm run build` succeeds.
+Iteration 9 (Quality Sweep): ALL 4 TASKS DONE (2026-09-26); Code Review pending. Plan v11.0. 4 tasks: TASK-039 DONE (git baseline — commit `5b34bc2`, 99 files, index clean). TASK-040 DONE (Low cleanup bundle — CR-IT5-001 dead tolerance removed, CR-IT8-001 comment + Test 70 pin added, CR-IT8-002 JSDoc fixed, LIM-021-2 re-scoped as determinism hardening via `randomSource()` seam + `TestGame`; 473/473 tests, 71 sections), TASK-041 DONE (dist check — `scripts/check-dist.mjs` created (Node ESM, cwd-independent via `import.meta.url`, no external deps) and wired to `package.json` `postbuild`; all 8 ACs verified, 473/473 tests unchanged, standard test flow unaffected), TASK-042 DONE (main.ts split — 2,903-line monolith → 19-line thin entry + 10 files under `src/tests/`; verbatim move, count-identity verified: 473 assertions, 71 sections, `Failed: 0`, stable ×2, no ReferenceError/TypeError; `tsc --noEmit`/`tsc`/`npm run build` exit 0; README structure tree updated; deviations DEV-042-1/2/3 documented). Challenge Agent review complete (2026-09-23): design sound; 8 findings all accepted (F-IT9-01 through F-IT9-08); task packets incorporate all corrections. Baseline: 473/473 tests, `npx tsc` 0 errors, `npm run build` succeeds.
 
 Iteration 8 (Compression System Fix): COMPLETE (2026-09-18). Plan v10.0. 3 tasks: TASK-036, TASK-037, TASK-038 all DONE. Code Review PASS. Bird's Eye Review COMPLETE (project health **Healthy**).
 
@@ -289,13 +289,13 @@ Fix Summary: The missing `=` was present during Code Review but the current code
 
 ## Debt-010: Single-File Test Suite (Bird's Eye Review 2026-09-18)
 
-Description: All 463 assertions live in `src/main.ts` (2,903 lines). Crosses the ~400 split threshold recommended by the 2026-08-21 Bird's Eye Review (Risk-BE-005).
+Description: All 473 assertions lived in `src/main.ts` (2,903 lines). Crossed the ~400 split threshold recommended by the 2026-08-21 Bird's Eye Review (Risk-BE-005).
 
 Impact: Maintainability, agent context cost, per-task diff attribution. No correctness impact.
 
 Priority: Low
 
-Status: OPEN — split by component in a quality iteration behind a small test-registry helper (no external framework, per Constraint-001); keep the `npx tsc && node dist/main.js` entry flow.
+Status: RESOLVED (TASK-042, 2026-09-25) — `src/main.ts` split into a 19-line thin entry plus 10 files under `src/tests/` (`harness.ts`, `mocks.ts`, 8 component `*.test.ts`). Verbatim move; count-identity verified (473 assertions, 71 sections, `Failed: 0`, stable ×2). The `npx tsc && node dist/main.js` entry flow is unchanged (Constraint-001 satisfied — no external framework).
 
 ---
 
@@ -405,11 +405,11 @@ Reason: The project's most expensive recurring bug class (3 instances: Debt-005,
 
 # Planning Guidance
 
-- TASK-001 through TASK-039 are all DONE.
-- Current iteration is Iteration 9 (Quality Sweep), Plan v11.0, IN PROGRESS (2026-09-23). TASK-039 DONE (git baseline, commit `5b34bc2`). TASK-040 and TASK-041 are READY; TASK-042 blocked by TASK-040. Challenge Agent review complete (2026-09-23); all 8 findings accepted and incorporated into task packets.
+- TASK-001 through TASK-040 are all DONE.
+- Current iteration is Iteration 9 (Quality Sweep), Plan v11.0. All 4 tasks DONE (TASK-039, TASK-040, TASK-041, TASK-042); Code Review pending. TASK-039 DONE (git baseline, commit `5b34bc2`). TASK-040 DONE (Low cleanup + determinism hardening, 473/473). TASK-042 DONE (main.ts split → thin entry + `src/tests/`, 473/473 count-identity verified). TASK-041 DONE (dist check — `scripts/check-dist.mjs` created and wired to `postbuild`; all 8 ACs verified). Challenge Agent review complete (2026-09-23); all 8 findings accepted and incorporated into task packets. Next dispatch: Code Review (Iteration 9).
 - Iteration 8 (Compression System Fix) is COMPLETE (Code Review PASS 2026-09-18). Bird's Eye Review COMPLETE (project health Healthy).
 - Iteration 7 (Bug Fixes) is COMPLETE (2026-09-01). Tasks: TASK-030 through TASK-035 are DONE.
-- Test suite total is 463 assertions (stable; Test 42 is deterministic under current code — F-IT9-02).
+- Test suite total is 473 assertions (stable; Test 42 is deterministic under current code — F-IT9-02). Section count: 71.
 - Iterations 0 through 8 are all COMPLETE.
 - Each new iteration should begin with a Challenge Agent review cycle.
 - Design deviation documentation should continue as a standard practice.
@@ -442,6 +442,22 @@ Self-contained. Implement Agent needs only Task Packet + Project State + Next Ac
 ---
 
 # Change Log
+
+## 2026-09-26
+
+Updated By: Implement Agent
+
+Summary: TASK-041 completed (Iteration 9, third dispatched task — final code task). Created `scripts/check-dist.mjs` (plain Node ESM, no TypeScript, no external deps) verifying dist output: (1) `dist/index.html` exists, (2) contains `src="entry.js"` (sed-rewritten form), (3) `dist/entry.js` exists; fails with a clear `stderr` message + non-zero exit on any failure. Wired to `package.json` `postbuild` (`&& node scripts/check-dist.mjs`), so `npm run build` (the CI build in `.github/workflows/deploy.yml`) now gates deploys on dist integrity. Paths resolved from the script's own location via `import.meta.url`/`fileURLToPath` (cwd-independent, DEC-041-2). All 8 ACs verified against the live codebase: `npm run build` exit 0 (check passes), `npx tsc && node dist/main.js` still 473/473 `Failed: 0` (test flow unaffected — confirms DEC-041-1: the check is NOT in the test suite), `npx tsc --noEmit` exit 0; failure cases independently exercised (corrupted `index.html` → check #2 fails + exit 1; deleted `entry.js` → check #3 fails + exit 1) and cwd-independence confirmed (ran the script from `/tmp`). Two implementation decisions documented (DEC-041-IMPL-1: used the packet's reference-implementation `path.resolve(__dirname,…)` path form vs. the DEC-041-2 prose `new URL(…)` form — both satisfy AC-2; DEC-041-IMPL-2: Challenge Agent not invoked — low-risk, fully-specified task with a provided reference implementation). No design deviations. Factual correction (LIM-041-2): the packet assumed `styles.css` is "referenced from index.html"; verified FALSE — `src/styles.css` is referenced nowhere in `src/`, `index.html`, or `vite.config.ts` (orphaned file); out of scope for this task, flagged for cleanup. All 4 Iteration-9 tasks now DONE; next dispatch: Code Review (Iteration 9). Artifact: .workflow_doc/30_implement.md.
+
+---
+
+## 2026-09-25
+
+Updated By: Implement Agent
+
+Summary: TASK-040 completed (Iteration 9, second task). Low cleanup bundle + determinism hardening: removed Test 42 dead tolerance (CR-IT5-001), added clarifying JSDoc to `CompressionSystem.pushBlocksRight` (CR-IT8-001), fixed `RightWall.shiftVertical` JSDoc indentation (CR-IT8-002), added `protected randomSource()` seam to `Game` + `TestGame` LCG override to `main.ts` (LIM-021-2 re-scoped, F-IT9-02/F-IT9-08), added Test 70 (10 assertions: one-column invariant + no-movement idempotency), updated README test-count note. All 11 ACs verified. Test suite: 463→473 assertions, 70→71 sections. No design deviations. Artifact: .workflow_doc/30_implement.md. Next: dispatch TASK-041 (dist check) and/or TASK-042 (main.ts split) — both now READY.
+
+---
 
 ## 2026-09-23
 

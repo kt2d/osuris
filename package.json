@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc",
-    "postbuild": "cp index.html dist/ && sed -i 's|src=\"./src/entry.js\"|src=\"entry.js\"|' dist/index.html",
+    "postbuild": "cp index.html dist/ && sed -i 's|src=\"./src/entry.js\"|src=\"entry.js\"|' dist/index.html && node scripts/check-dist.mjs",
     "dev": "vite dev",
     "preview": "vite preview",
     "start": "npx serve dist"
