@@ -132,7 +132,14 @@ export class CompressionSystem {
   // -------------------------------------------------------------------------
 
   /**
-   * Repeatedly push all blocks rightward until no more movement is possible.
+   * Pushes the movement target one column right.
+   *
+   * The loop is effectively single-pass: after one iteration, the seed column
+   * (leftWallX) is vacated by moveRight(), so the next buildMovementSet(leftWallX)
+   * returns an empty set and the loop breaks. The loop structure is preserved
+   * for clarity and to guard against future changes to moveRight() that might
+   * leave the seed column occupied. Do not simplify without updating
+   * compress-mechanism.md (Risk-BE-008).
    *
    * Each iteration:
    *  1. Build the movement set via BFS from blocks at leftWallX (the column

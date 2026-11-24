@@ -58,10 +58,10 @@ export class RightWall {
    * expansion into adjacent columns. Vertical wrapping is handled by
    * Field.wrapY().
    *
-     * @param dy The vertical displacement in y-index units. dy>0 increases the
-     *   y-index; since the renderer draws y=0 at the top, dy>0 moves the wall
-     *   DOWN on screen and dy<0 moves it UP. `Game` maps ArrowUp to dy<0 and
-     *   ArrowDown to dy>0 accordingly.
+   * @param dy The vertical displacement in y-index units. dy>0 increases the
+   *   y-index; since the renderer draws y=0 at the top, dy>0 moves the wall
+   *   DOWN on screen and dy<0 moves it UP. `Game` maps ArrowUp to dy<0 and
+   *   ArrowDown to dy>0 accordingly.
    */
   shiftVertical(dy: number): void {
     const oldY = this.y;

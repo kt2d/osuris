@@ -202,11 +202,10 @@ npm run build
 npx tsc && node dist/main.js
 ```
 
-Tests are embedded in `src/main.ts` using an assert-based harness.
-All tests must pass. The total assertion count is currently typically
-280 and may vary slightly between runs because Test 42 contains
-path-dependent conditional assertions driven by the random piece spawns —
-the summary's `Failed: 0` line is the pass criterion.
+Tests live under `src/tests/` (component test files) and run through a thin
+entry point (`src/main.ts`) using an assert-based harness (`src/tests/harness.ts`).
+All tests must pass. The total assertion count is deterministic
+(currently 473). The summary's `Failed: 0` line is the pass criterion.
 
 ### Preview Production Build
 
@@ -250,7 +249,18 @@ on rendering, and the Renderer consumes logical state only.
 .
 ├── src/                        # TypeScript source (game logic + tests)
 │   ├── entry.ts                # Browser entry point (creates Game, focuses canvas)
-│   ├── main.ts                 # Test runner (assert-based harness, Node)
+│   ├── main.ts                 # Test entry point (thin, imports from tests/)
+│   ├── tests/                  # Component test files
+│   │   ├── harness.ts          # Assert-based test harness
+│   │   ├── mocks.ts            # Test doubles & RAF overrides
+│   │   ├── game.test.ts
+│   │   ├── activePiece.test.ts
+│   │   ├── compression.test.ts
+│   │   ├── leftWall.test.ts
+│   │   ├── rightWall.test.ts
+│   │   ├── input.test.ts
+│   │   ├── renderer.test.ts
+│   │   └── effects.test.ts
 │   ├── Game.ts                 # State machine & component coordination
 │   ├── Field.ts                # Grid management with vertical looping
 │   ├── ActivePiece.ts          # Tetrimino shapes, rotation, collision
@@ -259,6 +269,7 @@ on rendering, and the Renderer consumes logical state only.
 │   ├── CompressionSystem.ts    # Block packing algorithm (BFS)
 │   ├── InputManager.ts         # Keyboard input handling
 │   ├── Renderer.ts             # Canvas rendering
+│   ├── EffectSystem.ts         # Push/connection effect timing
 │   └── styles.css              # Game UI styles
 ├── dist/                       # Compiled JavaScript output
 ├── index.html                  # Game HTML entry

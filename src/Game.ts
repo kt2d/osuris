@@ -407,7 +407,7 @@ export class Game {
     }
 
     // Random tetromino type (0-6)
-    const type = Math.floor(Math.random() * 7);
+    const type = Math.floor(this.randomSource() * 7);
 
     this.activePiece = new ActivePiece(
       this.field,
@@ -430,5 +430,18 @@ export class Game {
     this.leftWall.setActivePiece(this.activePiece);
 
     return true;
+  }
+
+  // -------------------------------------------------------------------------
+  // Testability seam
+  // -------------------------------------------------------------------------
+
+  /**
+   * Returns a pseudo-random value in [0, 1). Overridable for deterministic
+   * testing (TASK-040, F-IT9-02/F-IT9-08). Override in a TestGame subclass to
+   * pin the piece-spawn sequence without changing the production API.
+   */
+  protected randomSource(): number {
+    return Math.random();
   }
 }
